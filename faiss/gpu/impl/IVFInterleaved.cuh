@@ -99,10 +99,10 @@ __global__ void ivfInterleavedScan(
         __syncthreads();
 
         // How many vector blocks of 32 are in this list?
-        idx_t numBlocks = utils::divUp(numVecs, (idx_t)32);
+        idx_t numBlocks = utils::divUp(numVecs, (idx_t)kWarpSize);
 
         // Number of EncodeT words per each dimension of block of 32 vecs
-        constexpr int bytesPerVectorBlockDim = Codec::kEncodeBits * 32 / 8;
+        constexpr int bytesPerVectorBlockDim = Codec::kEncodeBits * kWarpSize / 8;
         constexpr int wordsPerVectorBlockDim =
                 bytesPerVectorBlockDim / sizeof(EncodeT);
         int wordsPerVectorBlock = wordsPerVectorBlockDim * dim;

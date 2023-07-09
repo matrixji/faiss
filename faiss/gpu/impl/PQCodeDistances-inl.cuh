@@ -14,6 +14,7 @@
 #include <faiss/gpu/utils/DeviceDefs.cuh>
 #include <faiss/gpu/utils/Float16.cuh>
 #include <faiss/gpu/utils/MatrixMult.cuh>
+#include <faiss/gpu/utils/NoTypeTensor.cuh>
 #include <faiss/gpu/utils/PtxUtils.cuh>
 #include <faiss/gpu/utils/Transpose.cuh>
 

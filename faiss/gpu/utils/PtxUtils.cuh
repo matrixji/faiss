@@ -13,26 +13,48 @@ namespace faiss {
 namespace gpu {
 
 // defines to simplify the SASS assembly structure file/line in the profiler
+#ifndef __HIP_PLATFORM_HCC__
 #define GET_BITFIELD_U32(OUT, VAL, POS, LEN) \
     asm("bfe.u32 %0, %1, %2, %3;" : "=r"(OUT) : "r"(VAL), "r"(POS), "r"(LEN));
 
 #define GET_BITFIELD_U64(OUT, VAL, POS, LEN) \
     asm("bfe.u64 %0, %1, %2, %3;" : "=l"(OUT) : "l"(VAL), "r"(POS), "r"(LEN));
+#else
+// TODO: __builtin_amdgcn_bfe ??
+#define GET_BITFIELD_U32(OUT, VAL, POS, LEN) \
+    OUT = (VAL >> (POS & 0xff)) & ((1u << (LEN & 0xff)) - 1u)
+#define GET_BITFIELD_U64(OUT, VAL, POS, LEN) \
+    OUT = (VAL >> (POS & 0xff)) & ((1u << (LEN & 0xff)) - 1u)
+#endif
 
 __device__ __forceinline__ unsigned int getBitfield(
         unsigned int val,
         int pos,
         int len) {
+#ifndef __HIP_PLATFORM_HCC__
     unsigned int ret;
     asm("bfe.u32 %0, %1, %2, %3;" : "=r"(ret) : "r"(val), "r"(pos), "r"(len));
     return ret;
+#else
+    pos &= 0xff;
+    len &= 0xff;
+    auto m = (1u << len) - 1u;
+    return (val >> pos) & m;
+#endif
 }
 
 __device__ __forceinline__ uint64_t
 getBitfield(uint64_t val, int pos, int len) {
+#ifndef __HIP_PLATFORM_HCC__
     uint64_t ret;
     asm("bfe.u64 %0, %1, %2, %3;" : "=l"(ret) : "l"(val), "r"(pos), "r"(len));
     return ret;
+#else
+    pos &= 0xff;
+    len &= 0xff;
+    auto m = (1u << len) - 1u;
+    return (val >> pos) & m;
+#endif
 }
 
 __device__ __forceinline__ unsigned int setBitfield(
@@ -40,19 +62,34 @@ __device__ __forceinline__ unsigned int setBitfield(
         unsigned int toInsert,
         int pos,
         int len) {
+#ifndef __HIP_PLATFORM_HCC__
     unsigned int ret;
     asm("bfi.b32 %0, %1, %2, %3, %4;"
         : "=r"(ret)
         : "r"(toInsert), "r"(val), "r"(pos), "r"(len));
     return ret;
+#else
+    pos &= 0xff;
+    len &= 0xff;
+    auto m = (1u << len) - 1u;
+    toInsert &= m;
+    toInsert <<= pos;
+    m <<= pos;
+    return (val & ~m) | toInsert;
+#endif
 }
 
 __device__ __forceinline__ int getLaneId() {
+#ifndef __HIP_PLATFORM_HCC__
     int laneId;
     asm("mov.u32 %0, %%laneid;" : "=r"(laneId));
     return laneId;
+#else
+    return __lane_id();
+#endif
 }
 
+#ifndef __HIP_PLATFORM_HCC__
 __device__ __forceinline__ unsigned getLaneMaskLt() {
     unsigned mask;
     asm("mov.u32 %0, %%lanemask_lt;" : "=r"(mask));
@@ -87,6 +124,7 @@ __device__ __forceinline__ void namedBarrierArrived(int name, int numThreads) {
                  : "r"(name), "r"(numThreads)
                  : "memory");
 }
+#endif
 
 } // namespace gpu
 } // namespace faiss

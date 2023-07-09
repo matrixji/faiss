@@ -184,6 +184,8 @@ void runPass2SelectLists(
                         outIndices);                                    \
     } while (0)
 
+#ifndef __HIP_PLATFORM_HCC__
+
 #if GPU_MAX_SELECTION_K >= 2048
 
     // block size 128 for k <= 1024, 64 for k = 2048
@@ -230,6 +232,53 @@ void runPass2SelectLists(
     } while (0)
 
 #endif // GPU_MAX_SELECTION_K
+
+#else // __HIP_PLATFORM_HCC__
+
+#if GPU_MAX_SELECTION_K >= 2048
+
+    // block size 128 for k <= 1024, 64 for k = 2048
+#define RUN_PASS_DIR(INDEX_T, DIR)                \
+    do {                                          \
+        if (k == 1) {                             \
+            RUN_PASS(INDEX_T, 128, 1, 1, DIR);    \
+        } else if (k <= 64) {                     \
+            RUN_PASS(INDEX_T, 128, 64, 3, DIR);   \
+        } else if (k <= 128) {                    \
+            RUN_PASS(INDEX_T, 128, 128, 3, DIR);  \
+        } else if (k <= 256) {                    \
+            RUN_PASS(INDEX_T, 128, 256, 4, DIR);  \
+        } else if (k <= 512) {                    \
+            RUN_PASS(INDEX_T, 128, 512, 8, DIR);  \
+        } else if (k <= 1024) {                   \
+            RUN_PASS(INDEX_T, 128, 1024, 8, DIR); \
+        } else if (k <= 2048) {                   \
+            RUN_PASS(INDEX_T, 64, 2048, 8, DIR);  \
+        }                                         \
+    } while (0)
+
+#else
+
+#define RUN_PASS_DIR(INDEX_T, DIR)                \
+    do {                                          \
+        if (k == 1) {                             \
+            RUN_PASS(INDEX_T, 128, 1, 1, DIR);    \
+        } else if (k <= 64) {                     \
+            RUN_PASS(INDEX_T, 128, 64, 3, DIR);   \
+        } else if (k <= 128) {                    \
+            RUN_PASS(INDEX_T, 128, 128, 3, DIR);  \
+        } else if (k <= 256) {                    \
+            RUN_PASS(INDEX_T, 128, 256, 4, DIR);  \
+        } else if (k <= 512) {                    \
+            RUN_PASS(INDEX_T, 128, 512, 8, DIR);  \
+        } else if (k <= 1024) {                   \
+            RUN_PASS(INDEX_T, 128, 1024, 8, DIR); \
+        }                                         \
+    } while (0)
+
+#endif // GPU_MAX_SELECTION_K
+
+#endif // __HIP_PLATFORM_HCC__
 
     if (use64BitSelection) {
         if (chooseLargest) {

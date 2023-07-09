@@ -13,24 +13,35 @@ project(faiss
   LANGUAGES CXX)
 include(GNUInstallDirs)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
 # Valid values are "generic", "avx2".
 option(FAISS_OPT_LEVEL "" "generic")
-option(FAISS_ENABLE_GPU "Enable support for GPU indexes." ON)
+option(FAISS_ENABLE_GPU "Enable support for GPU indexes." OFF)
 option(FAISS_ENABLE_PYTHON "Build Python extension." ON)
 option(FAISS_ENABLE_C_API "Build C API." OFF)
+option(FAISS_ENABLE_ROCM "Enable ROCM support." ON)
 
 if(FAISS_ENABLE_GPU)
   set(CMAKE_CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
   enable_language(CUDA)
 endif()
 
+if(FAISS_ENABLE_ROCM)
+  enable_language(HIP)
+  add_definitions(-DCUDA_VERSION=11800)
+endif()
+
+
 add_subdirectory(faiss)
 
 if(FAISS_ENABLE_GPU)
+  add_subdirectory(faiss/gpu)
+endif()
+
+if(FAISS_ENABLE_ROCM)
   add_subdirectory(faiss/gpu)
 endif()
 
@@ -52,6 +63,10 @@ if(BUILD_TESTING)
   add_subdirectory(tests)
 
   if(FAISS_ENABLE_GPU)
+    add_subdirectory(faiss/gpu/test)
+  endif()
+
+  if(FAISS_ENABLE_ROCM)
     add_subdirectory(faiss/gpu/test)
   endif()
 endif()

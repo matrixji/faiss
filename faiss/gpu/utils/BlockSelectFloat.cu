@@ -22,7 +22,9 @@ namespace gpu {
 // 2048, 8
 
 BLOCK_SELECT_DECL(float, true, 1);
+#ifndef __HIP_PLATFORM_HCC__
 BLOCK_SELECT_DECL(float, true, 32);
+#endif
 BLOCK_SELECT_DECL(float, true, 64);
 BLOCK_SELECT_DECL(float, true, 128);
 BLOCK_SELECT_DECL(float, true, 256);
@@ -33,7 +35,9 @@ BLOCK_SELECT_DECL(float, true, 2048);
 #endif
 
 BLOCK_SELECT_DECL(float, false, 1);
+#ifndef __HIP_PLATFORM_HCC__
 BLOCK_SELECT_DECL(float, false, 32);
+#endif
 BLOCK_SELECT_DECL(float, false, 64);
 BLOCK_SELECT_DECL(float, false, 128);
 BLOCK_SELECT_DECL(float, false, 256);
@@ -55,8 +59,10 @@ void runBlockSelect(
     if (dir) {
         if (k == 1) {
             BLOCK_SELECT_CALL(float, true, 1);
+#ifndef __HIP_PLATFORM_HCC__
         } else if (k <= 32) {
             BLOCK_SELECT_CALL(float, true, 32);
+#endif
         } else if (k <= 64) {
             BLOCK_SELECT_CALL(float, true, 64);
         } else if (k <= 128) {
@@ -75,8 +81,10 @@ void runBlockSelect(
     } else {
         if (k == 1) {
             BLOCK_SELECT_CALL(float, false, 1);
+#ifndef __HIP_PLATFORM_HCC__
         } else if (k <= 32) {
             BLOCK_SELECT_CALL(float, false, 32);
+#endif
         } else if (k <= 64) {
             BLOCK_SELECT_CALL(float, false, 64);
         } else if (k <= 128) {
@@ -108,8 +116,10 @@ void runBlockSelectPair(
     if (dir) {
         if (k == 1) {
             BLOCK_SELECT_PAIR_CALL(float, true, 1);
+#ifndef __HIP_PLATFORM_HCC__
         } else if (k <= 32) {
             BLOCK_SELECT_PAIR_CALL(float, true, 32);
+#endif
         } else if (k <= 64) {
             BLOCK_SELECT_PAIR_CALL(float, true, 64);
         } else if (k <= 128) {
@@ -128,8 +138,10 @@ void runBlockSelectPair(
     } else {
         if (k == 1) {
             BLOCK_SELECT_PAIR_CALL(float, false, 1);
+#ifndef __HIP_PLATFORM_HCC__
         } else if (k <= 32) {
             BLOCK_SELECT_PAIR_CALL(float, false, 32);
+#endif
         } else if (k <= 64) {
             BLOCK_SELECT_PAIR_CALL(float, false, 64);
         } else if (k <= 128) {

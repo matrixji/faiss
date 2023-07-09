@@ -34,6 +34,7 @@ struct LoadStore {
     }
 };
 
+#ifndef __HIP_PLATFORM_HCC__
 template <>
 struct LoadStore<Half4> {
     static inline __device__ Half4 load(void* p) {
@@ -96,6 +97,7 @@ struct LoadStore<Half8> {
 #endif
     }
 };
+#endif
 
 } // namespace gpu
 } // namespace faiss

@@ -301,10 +301,12 @@ void StandardGpuResourcesImpl::initializeForDevice(int device) {
             prop.minor);
 
     // Our code is pre-built with and expects warpSize == 32, validate that
+#ifndef __HIP_PLATFORM_HCC__
     FAISS_ASSERT_FMT(
             prop.warpSize == 32,
             "Device id %d does not have expected warpSize of 32",
             device);
+#endif
 
     // Create streams
     cudaStream_t defaultStream = 0;
@@ -339,7 +341,7 @@ void StandardGpuResourcesImpl::initializeForDevice(int device) {
     // rounding down of inputs to f16 (though accumulate in f32) which results
     // in unacceptable loss of precision in general. For CUDA 11 / A100, only
     // enable tensor core support if it doesn't result in a loss of precision.
-#if CUDA_VERSION >= 11000
+#if CUDA_VERSION >= 11000 && !defined(__HIP_PLATFORM_HCC__)
     cublasSetMathMode(
             blasHandle, CUBLAS_MATH_DISALLOW_REDUCED_PRECISION_REDUCTION);
 #endif

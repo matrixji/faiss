@@ -9,6 +9,7 @@
 
 #include <cuda.h>
 #include <faiss/gpu/GpuResources.h>
+#include <faiss/gpu/utils/DeviceUtils.h>
 #include <thrust/device_vector.h>
 #include <unordered_set>
 

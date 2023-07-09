@@ -8,7 +8,9 @@
 #include <faiss/gpu/utils/DeviceUtils.h>
 #include <faiss/gpu/utils/StaticUtils.h>
 #include <faiss/impl/FaissAssert.h>
+#ifndef __HIP_PLATFORM_HCC__
 #include <math_constants.h> // in CUDA SDK, for CUDART_NAN_F
+#endif
 #include <faiss/gpu/impl/VectorResidual.cuh>
 #include <faiss/gpu/utils/ConversionOperators.cuh>
 #include <faiss/gpu/utils/Tensor.cuh>
@@ -33,10 +35,18 @@ __global__ void calcResidual(
     if (centroidId == -1) {
         if (LargeDim) {
             for (idx_t i = threadIdx.x; i < vecs.getSize(1); i += blockDim.x) {
+#ifndef __HIP_PLATFORM_HCC__
                 residual[i] = CUDART_NAN_F;
+#else
+                residual[i] = NAN;
+#endif
             }
         } else {
+#ifndef __HIP_PLATFORM_HCC__
             residual[threadIdx.x] = CUDART_NAN_F;
+#else
+            residual[threadIdx.x] = NAN;
+#endif
         }
 
         return;

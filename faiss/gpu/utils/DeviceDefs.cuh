@@ -18,12 +18,20 @@ namespace gpu {
 #endif
 
 // We validate this against the actual architecture in device initialization
+#ifndef __HIP_PLATFORM_HCC__
 constexpr int kWarpSize = 32;
+#else
+constexpr int kWarpSize = 64;
+#endif
 
 // This is a memory barrier for intra-warp writes to shared memory.
 __forceinline__ __device__ void warpFence() {
 #if CUDA_VERSION >= 9000
+#ifdef __HIP_PLATFORM_HCC__
+    __syncthreads();
+#else
     __syncwarp();
+#endif
 #else
     // For the time being, assume synchronicity.
     //  __threadfence_block();

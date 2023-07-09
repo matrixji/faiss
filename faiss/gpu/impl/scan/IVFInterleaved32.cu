@@ -10,7 +10,9 @@
 namespace faiss {
 namespace gpu {
 
+#ifndef __HIP_PLATFORM_HCC__
 IVF_INTERLEAVED_IMPL(128, 32, 2)
+#endif
 
 }
 } // namespace faiss

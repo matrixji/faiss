@@ -4,13 +4,21 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
-find_package(CUDAToolkit REQUIRED)
+if (FAISS_ENABLE_ROCM)
+  find_package(HIP REQUIRED)
+else ()
+  find_package(CUDAToolkit REQUIRED)
+endif ()
 
 # Defines `gtest_discover_tests()`.
 include(GoogleTest)
 
 add_library(faiss_gpu_test_helper TestUtils.cpp)
-target_link_libraries(faiss_gpu_test_helper PUBLIC faiss gtest CUDA::cudart)
+if (FAISS_ENABLE_ROCM)
+  target_link_libraries(faiss_gpu_test_helper PUBLIC faiss gtest hip::host)
+else ()
+  target_link_libraries(faiss_gpu_test_helper PUBLIC faiss gtest CUDA::cudart)
+endif ()
 
 macro(faiss_gpu_test file)
   get_filename_component(test_name ${file} NAME_WE)
@@ -32,5 +40,10 @@ faiss_gpu_test(TestGpuSelect.cu)
 add_executable(demo_ivfpq_indexing_gpu EXCLUDE_FROM_ALL
   demo_ivfpq_indexing_gpu.cpp)
 
-target_link_libraries(demo_ivfpq_indexing_gpu
-  PRIVATE faiss gtest_main CUDA::cudart)
+if (FAISS_ENABLE_ROCM)
+  target_link_libraries(demo_ivfpq_indexing_gpu
+    PRIVATE faiss gtest_main hip::host)
+else ()
+  target_link_libraries(demo_ivfpq_indexing_gpu
+    PRIVATE faiss gtest_main CUDA::cudart)
+endif ()

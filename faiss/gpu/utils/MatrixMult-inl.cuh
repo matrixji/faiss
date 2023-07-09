@@ -81,6 +81,7 @@ cublasStatus_t rawGemm(
     }
 #endif
 
+#ifndef __HIP_PLATFORM_HCC__
     // Always accumulate in f32
     return cublasSgemmEx(
             handle,
@@ -100,6 +101,28 @@ cublasStatus_t rawGemm(
             C,
             CUDA_R_32F,
             ldc);
+#else
+    return hipblasGemmEx(
+            handle,
+            transa,
+            transb,
+            m,
+            n,
+            k,
+            &fAlpha,
+            A,
+            cAT,
+            lda,
+            B,
+            cBT,
+            ldb,
+            &fBeta,
+            C,
+            HIPBLAS_R_32F,
+            ldc,
+            HIPBLAS_C_32F,
+            HIPBLAS_GEMM_DEFAULT);
+#endif
 }
 
 template <typename AT, typename BT>
